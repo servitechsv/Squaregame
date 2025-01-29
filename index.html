@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -89,6 +89,7 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
+        // Ajustar el tamaño del canvas
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
@@ -96,16 +97,16 @@
         const shipWidth = 50;
         const shipHeight = 50;
         let shipX = canvas.width / 2 - shipWidth / 2;
-        let shipY = canvas.height - shipHeight - 120; // Adelantamos la nave para dispositivos móviles
+        let shipY = canvas.height - shipHeight - 100; // Ajustar la posición inicial de la nave
         const shipSpeed = 5;
         let moveLeft = false;
         let moveRight = false;
 
         // Meteoritos
-        const meteorSizes = { large: 60, small: 15 };
+        const meteorSizes = { large: 60, small: 15 }; // Tamaños de meteoritos
         const meteorSpeed = 2;
         let meteors = [];
-        let passedMeteors = 0;
+        let passedMeteors = 0; // Contador de meteoros que han pasado
 
         // Proyectiles
         const bulletWidth = 5;
@@ -123,26 +124,22 @@
         // Partículas
         let particles = [];
 
+        // Partes de la nave
+        let shipParts = [];
+
         // Estado del juego
         let isGameOver = false;
 
-        // Sonido MIDI
-        const midiSound = new Audio('001.mid');
-        midiSound.loop = true;
-
-        // Función para comenzar el sonido MIDI
-        function playMidiSound() {
-            midiSound.play();
-        }
-
         // Dibujar la nave
         function drawShip() {
+            // Dibujar el cuadrito blanco (parte superior de la nave)
             ctx.fillStyle = "white";
             ctx.fillRect(shipX + shipWidth / 2 - 10, shipY, 20, 20);
 
+            // Dibujar los dos cuadritos azules (parte inferior de la nave)
             ctx.fillStyle = "blue";
-            ctx.fillRect(shipX, shipY + 20, 20, 20);
-            ctx.fillRect(shipX + shipWidth - 20, shipY + 20, 20, 20);
+            ctx.fillRect(shipX, shipY + 20, 20, 20); // Cuadrito azul izquierdo
+            ctx.fillRect(shipX + shipWidth - 20, shipY + 20, 20, 20); // Cuadrito azul derecho
         }
 
         // Dibujar meteoritos
@@ -168,10 +165,18 @@
                 ctx.fillRect(particle.x, particle.y, particle.size, particle.size);
                 particle.x += particle.vx;
                 particle.y += particle.vy;
-                particle.size *= 0.95;
+                particle.size *= 0.95; // Reducir el tamaño de la partícula
                 if (particle.size < 0.5) {
-                    particles.splice(index, 1);
+                    particles.splice(index, 1); // Eliminar partícula cuando es muy pequeña
                 }
+            });
+        }
+
+        // Dibujar partes de la nave
+        function drawShipParts() {
+            shipParts.forEach(part => {
+                ctx.fillStyle = part.color;
+                ctx.fillRect(part.x, part.y, part.size, part.size);
             });
         }
 
@@ -185,11 +190,13 @@
             }
         }
 
-        // Eventos de teclado
+        // Eventos del teclado
         document.addEventListener("keydown", (event) => {
             if (event.key === "ArrowLeft") moveLeft = true;
             if (event.key === "ArrowRight") moveRight = true;
-            if (event.key === " ") bullets.push({ x: shipX + shipWidth / 2 - bulletWidth / 2, y: shipY });
+            if (event.key === " ") { // Barra espaciadora para disparar
+                bullets.push({ x: shipX + shipWidth / 2 - bulletWidth / 2, y: shipY });
+            }
         });
 
         document.addEventListener("keyup", (event) => {
@@ -208,71 +215,170 @@
 
         // Actualizar el juego
         function update() {
-            if (isGameOver) return;
+            if (isGameOver) return; // Si el juego ha terminado, no actualizar
 
+            // Mover la nave
             moveShip();
 
-            meteors.forEach(meteor => meteor.y += meteorSpeed);
+            // Mover meteoritos
+            meteors.forEach(meteor => {
+                meteor.y += meteorSpeed;
+            });
 
-            bullets.forEach(bullet => bullet.y -= bulletSpeed);
+            // Mover proyectiles
+            bullets.forEach(bullet => {
+                bullet.y -= bulletSpeed;
+            });
 
+            // Generar nuevos meteoritos grandes
             if (Math.random() < 0.02) {
                 meteors.push({
                     x: Math.random() * (canvas.width - meteorSizes.large),
                     y: 0,
                     size: meteorSizes.large,
+                    type: "large",
                     color: colors[Math.floor(Math.random() * colors.length)]
                 });
             }
 
+            // Detectar colisiones entre proyectiles y meteoritos
             bullets.forEach((bullet, bulletIndex) => {
                 meteors.forEach((meteor, meteorIndex) => {
-                    if (bullet.x < meteor.x + meteor.size && bullet.x + bulletWidth > meteor.x &&
-                        bullet.y < meteor.y + meteor.size && bullet.y + bulletHeight > meteor.y) {
+                    if (bullet.x < meteor.x + meteor.size &&
+                        bullet.x + bulletWidth > meteor.x &&
+                        bullet.y < meteor.y + meteor.size &&
+                        bullet.y + bulletHeight > meteor.y) {
                         bullets.splice(bulletIndex, 1);
+
+                        // Si el meteorito es grande, se divide en 4 pequeños
+                        if (meteor.type === "large") {
+                            for (let i = 0; i < 4; i++) {
+                                meteors.push({
+                                    x: meteor.x + Math.random() * 40 - 20, // Añadir desplazamiento aleatorio
+                                    y: meteor.y + Math.random() * 40 - 20, // Añadir desplazamiento aleatorio
+                                    size: meteorSizes.small,
+                                    type: "small",
+                                    color: colors[Math.floor(Math.random() * colors.length)]
+                                });
+                            }
+                        }
+
+                        // Crear partículas al destruir un meteorito
+                        for (let i = 0; i < 20; i++) {
+                            particles.push({
+                                x: meteor.x + meteor.size / 2,
+                                y: meteor.y + meteor.size / 2,
+                                size: Math.random() * 5 + 2,
+                                color: meteor.color,
+                                vx: (Math.random() - 0.5) * 4,
+                                vy: (Math.random() - 0.5) * 4
+                            });
+                        }
+
+                        // Eliminar el meteorito actual
                         meteors.splice(meteorIndex, 1);
                         score += 10;
                     }
                 });
             });
 
-            meteors = meteors.filter(meteor => meteor.y < canvas.height);
+            // Detectar colisiones entre nave y meteoritos
+            meteors.forEach((meteor, index) => {
+                if (shipX < meteor.x + meteor.size &&
+                    shipX + shipWidth > meteor.x &&
+                    shipY < meteor.y + meteor.size &&
+                    shipY + shipHeight > meteor.y) {
+                    meteors.splice(index, 1);
+                    lives -= 1;
+                    if (lives === 0) {
+                        endGame();
+                    }
+                }
+            });
+
+            // Limpiar meteoritos y proyectiles fuera de la pantalla
+            meteors = meteors.filter(meteor => {
+                if (meteor.y >= canvas.height) {
+                    passedMeteors += 1;
+                    return false;
+                }
+                return true;
+            });
+
             bullets = bullets.filter(bullet => bullet.y > 0);
 
+            // Verificar si han pasado 15 meteoros
             if (passedMeteors >= 100) {
                 endGame();
             }
+
+            // Detectar colisiones entre nave y partes de la nave
+            shipParts.forEach((part, index) => {
+                if (shipX < part.x + part.size &&
+                    shipX + shipWidth > part.x &&
+                    shipY < part.y + part.size &&
+                    shipY + shipHeight > part.y) {
+                    shipParts.splice(index, 1);
+                    // Agregar una nueva nave a la par
+                    shipParts.push({
+                        x: shipX + shipWidth + 10,
+                        y: shipY,
+                        size: 20,
+                        color: "green"
+                    });
+                }
+            });
+        }
+
+        // Dibujar el juego
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawShip();
+            drawMeteors();
+            drawBullets();
+            drawParticles();
+            drawShipParts();
+
+            // Dibujar puntuación y vidas
+            ctx.fillStyle = "white";
+            ctx.font = "20px Arial";
+            ctx.fillText("Puntuación: " + score, 10, 30);
+            ctx.fillText("Vidas: " + lives, canvas.width - 100, 30);
         }
 
         // Función para terminar el juego
         function endGame() {
-            isGameOver = true;
+            isGameOver = true; // Marcar el juego como terminado
             document.getElementById("finalScore").textContent = "Puntuación: " + score;
             document.getElementById("gameOverModal").style.display = "block";
-            cancelAnimationFrame(animationFrameId);
+            cancelAnimationFrame(animationFrameId); // Detener el bucle del juego
         }
 
         // Reiniciar el juego
         document.getElementById("restartButton").addEventListener("click", () => {
             document.getElementById("gameOverModal").style.display = "none";
             resetGame();
-            animationFrameId = requestAnimationFrame(gameLoop);
+            animationFrameId = requestAnimationFrame(gameLoop); // Reiniciar el bucle del juego
         });
 
         // Reiniciar el estado del juego
         function resetGame() {
-            isGameOver = false;
+            isGameOver = false; // Reiniciar el estado del juego
             score = 0;
             lives = 3;
             passedMeteors = 0;
             meteors = [];
             bullets = [];
+            particles = [];
+            shipParts = [];
+            shipX = canvas.width / 2 - shipWidth / 2;
+            shipY = canvas.height - shipHeight - 100; // Ajustar la posición inicial de la nave
         }
 
         // Bucle del juego
         let animationFrameId;
         function gameLoop() {
-            if (!isGameOver) {
+            if (!isGameOver) { // Solo actualizar y dibujar si el juego no ha terminado
                 update();
                 draw();
             }
@@ -280,7 +386,6 @@
         }
 
         // Iniciar el juego
-        playMidiSound();  // Reproducir el sonido MIDI cuando el juego comienza
         gameLoop();
     </script>
 </body>
