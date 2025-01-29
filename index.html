@@ -72,10 +72,8 @@
     <canvas id="gameCanvas"></canvas>
 
     <div id="controls">
-        <button id="up">↑</button><br>
         <button id="left">←</button>
-        <button id="right">→</button><br>
-        <button id="down">↓</button><br>
+        <button id="right">→</button>
     </div>
 
     <button id="shootButton">Disparar</button>
@@ -102,8 +100,6 @@
         const shipSpeed = 5;
         let moveLeft = false;
         let moveRight = false;
-        let moveUp = false;
-        let moveDown = false;
 
         // Meteoritos
         const meteorSizes = { large: 60, small: 15 }; // Tamaños de meteoritos
@@ -191,20 +187,12 @@
             if (moveRight && shipX < canvas.width - shipWidth) {
                 shipX += shipSpeed;
             }
-            if (moveUp && shipY > 0) {
-                shipY -= shipSpeed;
-            }
-            if (moveDown && shipY < canvas.height - shipHeight) {
-                shipY += shipSpeed;
-            }
         }
 
         // Eventos del teclado
         document.addEventListener("keydown", (event) => {
             if (event.key === "ArrowLeft") moveLeft = true;
             if (event.key === "ArrowRight") moveRight = true;
-            if (event.key === "ArrowUp") moveUp = true;
-            if (event.key === "ArrowDown") moveDown = true;
             if (event.key === " ") { // Barra espaciadora para disparar
                 bullets.push({ x: shipX + shipWidth / 2 - bulletWidth / 2, y: shipY });
             }
@@ -213,8 +201,6 @@
         document.addEventListener("keyup", (event) => {
             if (event.key === "ArrowLeft") moveLeft = false;
             if (event.key === "ArrowRight") moveRight = false;
-            if (event.key === "ArrowUp") moveUp = false;
-            if (event.key === "ArrowDown") moveDown = false;
         });
 
         // Controles táctiles
@@ -222,10 +208,6 @@
         document.getElementById("left").addEventListener("touchend", () => moveLeft = false);
         document.getElementById("right").addEventListener("touchstart", () => moveRight = true);
         document.getElementById("right").addEventListener("touchend", () => moveRight = false);
-        document.getElementById("up").addEventListener("touchstart", () => moveUp = true);
-        document.getElementById("up").addEventListener("touchend", () => moveUp = false);
-        document.getElementById("down").addEventListener("touchstart", () => moveDown = true);
-        document.getElementById("down").addEventListener("touchend", () => moveDown = false);
         document.getElementById("shootButton").addEventListener("touchstart", () => {
             bullets.push({ x: shipX + shipWidth / 2 - bulletWidth / 2, y: shipY });
         });
