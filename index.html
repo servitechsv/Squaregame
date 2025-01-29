@@ -20,7 +20,8 @@
         #controls {
             position: fixed;
             bottom: 20px;
-            left: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             display: none;
         }
         #controls button {
@@ -96,7 +97,7 @@
         const shipWidth = 50;
         const shipHeight = 50;
         let shipX = canvas.width / 2 - shipWidth / 2;
-        let shipY = canvas.height - shipHeight - 10;
+        let shipY = canvas.height - shipHeight - 100; // Ajustar la posición inicial de la nave
         const shipSpeed = 5;
         let moveLeft = false;
         let moveRight = false;
@@ -307,7 +308,7 @@
             bullets = bullets.filter(bullet => bullet.y > 0);
 
             // Verificar si han pasado 15 meteoros
-            if (passedMeteors >= 5000) {
+            if (passedMeteors >= 100) {
                 endGame();
             }
 
@@ -371,7 +372,7 @@
             particles = [];
             shipParts = [];
             shipX = canvas.width / 2 - shipWidth / 2;
-            shipY = canvas.height - shipHeight - 10;
+            shipY = canvas.height - shipHeight - 100; // Ajustar la posición inicial de la nave
         }
 
         // Bucle del juego
