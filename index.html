@@ -27,6 +27,22 @@
             font-size: 24px;
             padding: 10px;
             margin: 5px;
+            background-color: rgba(255, 255, 255, 0.5); /* Botones semi-transparentes */
+            border: none;
+            border-radius: 50%;
+            color: white;
+        }
+        #shootButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 24px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.5); /* Botón de disparo semi-transparente */
+            border: none;
+            border-radius: 50%;
+            color: white;
+            display: none;
         }
         #gameOverModal {
             display: none;
@@ -46,7 +62,7 @@
             margin-top: 10px;
         }
         @media (max-width: 768px) {
-            #controls {
+            #controls, #shootButton {
                 display: block;
             }
         }
@@ -60,8 +76,9 @@
         <button id="left">←</button>
         <button id="right">→</button><br>
         <button id="down">↓</button><br>
-        <button id="shoot">Disparar</button>
     </div>
+
+    <button id="shootButton">Disparar</button>
 
     <div id="gameOverModal">
         <h2>¡Juego Terminado!</h2>
@@ -209,7 +226,7 @@
         document.getElementById("up").addEventListener("touchend", () => moveUp = false);
         document.getElementById("down").addEventListener("touchstart", () => moveDown = true);
         document.getElementById("down").addEventListener("touchend", () => moveDown = false);
-        document.getElementById("shoot").addEventListener("touchstart", () => {
+        document.getElementById("shootButton").addEventListener("touchstart", () => {
             bullets.push({ x: shipX + shipWidth / 2 - bulletWidth / 2, y: shipY });
         });
 
